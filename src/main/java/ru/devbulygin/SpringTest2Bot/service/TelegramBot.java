@@ -1,5 +1,6 @@
 package ru.devbulygin.SpringTest2Bot.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -8,6 +9,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.devbulygin.SpringTest2Bot.config.BotConfig;
 
 @Component
+@Slf4j
 public class TelegramBot extends TelegramLongPollingBot {
 
     final BotConfig config;
@@ -47,6 +49,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void startCommandReceived(long chatId, String name) {
 
         String answer = "Hi, " + name + ", nice to meet you!";
+        log.info("Replied to User " + name);
 
         sendMessage(chatId, answer);
     }
@@ -57,7 +60,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            log.error("Error occurred: " + e.getMessage());
         }
     }
 }
