@@ -1,5 +1,6 @@
 package ru.devbulygin.SpringTest2Bot.service;
 
+import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.grizzly.http.util.TimeStamp;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,10 +114,13 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void startCommandReceived(long chatId, String name) {
 
-        String answer = "Hi, " + name + ", nice to meet you!";
+
+        String answer = EmojiParser.parseToUnicode("Hi, " + name + ", nice to meet you!" + " :blush:");
+//        String answer = "Hi, " + name + ", nice to meet you!";
         log.info("Replied to User " + name);
 
         sendMessage(chatId, answer);
+
     }
 
     private void sendMessage (long chatId, String textToSend) {
