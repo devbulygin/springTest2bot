@@ -13,6 +13,9 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.devbulygin.SpringTest2Bot.config.BotConfig;
 import ru.devbulygin.SpringTest2Bot.model.User;
@@ -116,7 +119,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
         String answer = EmojiParser.parseToUnicode("Hi, " + name + ", nice to meet you!" + " :blush:");
-//        String answer = "Hi, " + name + ", nice to meet you!";
         log.info("Replied to User " + name);
 
         sendMessage(chatId, answer);
@@ -125,6 +127,29 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void sendMessage (long chatId, String textToSend) {
         SendMessage message = new SendMessage(String.valueOf(chatId), textToSend);
+
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        row.add("weather");
+        row.add("get random joke");
+        row.add("stripped");
+
+        keyboardRows.add(row);
+
+        row = new KeyboardRow();
+        row.add("register");
+        row.add("check my data");
+
+        keyboardRows.add(row);
+
+        keyboardMarkup.setKeyboard(keyboardRows);
+
+        message.setReplyMarkup(keyboardMarkup);
+
+
+
+
 
         try {
             execute(message);
