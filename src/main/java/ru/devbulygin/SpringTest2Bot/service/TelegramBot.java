@@ -3,6 +3,7 @@ package ru.devbulygin.SpringTest2Bot.service;
 import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -19,7 +20,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.devbulygin.SpringTest2Bot.config.BotConfig;
+import ru.devbulygin.SpringTest2Bot.model.Ads;
 import ru.devbulygin.SpringTest2Bot.model.User;
+import ru.devbulygin.SpringTest2Bot.repository.AdsRepository;
 import ru.devbulygin.SpringTest2Bot.repository.UserRepository;
 
 import java.lang.invoke.SwitchPoint;
@@ -33,6 +36,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private UserRepository repository;
+
+    @Autowired
+    private AdsRepository adsRepository;
 
     private static final String HELP_TEXT = "This bot is created to demonstrate Spring capabilities.\n\n"
             + "You can execute command from the main menu on the left or by typing a command: \n\n"
@@ -89,10 +95,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             if (messageText.contains("/send") && config.getOwnerId() == chatId) {
                 var textToSend = EmojiParser.parseToUnicode(messageText.substring(messageText.indexOf(" ")));
-                var users = repository.findAll();
-                for (User user: users) {
-                    prepareAndSendMessage(user.getChatId(), textToSend);
-                }
+                sendToUser(textToSend);
             } else {
 
                 switch (messageText) {
@@ -251,5 +254,24 @@ public class TelegramBot extends TelegramLongPollingBot {
         message.setText(textToSend);
 
         executeMessage(message);
+    }
+
+    @Scheduled(cron = "${cron.scheduler}")
+    private void sendAds() {
+
+        var ads = adsRepository.findAll();
+        var users = repository.findAll();
+
+        for (Ads ad: ads) {
+            sendToUser(ad.getAd());
+        }
+
+    }
+
+    private void sendToUser(String textToSend) {
+        var users = repository.findAll();
+        for (User user: users) {
+            prepareAndSendMessage(user.getChatId(), textToSend);
+        }
     }
 }
