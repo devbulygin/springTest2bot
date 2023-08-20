@@ -2,9 +2,7 @@ package ru.devbulygin.SpringTest2Bot.service;
 
 import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
-import org.glassfish.grizzly.http.util.TimeStamp;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -15,7 +13,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -24,7 +21,6 @@ import ru.devbulygin.SpringTest2Bot.config.BotConfig;
 import ru.devbulygin.SpringTest2Bot.model.User;
 import ru.devbulygin.SpringTest2Bot.repository.UserRepository;
 
-import java.awt.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +50,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "get a welcome message"));
         listOfCommands.add(new BotCommand("/register", "register new user"));
+        listOfCommands.add(new BotCommand("/send", "send message all bot users"));
         listOfCommands.add(new BotCommand("/mydata", "get your data stored"));
         listOfCommands.add(new BotCommand("/deletedata", "delete my data"));
         listOfCommands.add(new BotCommand("/help", "info how to use this bot"));
@@ -84,6 +81,14 @@ public class TelegramBot extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
+            if (messageText.contains("/send") && config.getOwnerId() == chatId) {
+                var textToSend = EmojiParser.parseToUnicode(messageText.substring(messageText.indexOf(" ")));
+                var users = repository.findAll();
+                for (User user: users) {
+                    sendMessage(user.getChatId(), textToSend);
+                }
+            }
+
             switch (messageText) {
                 case "/start":
                     registerUser(update.getMessage());
@@ -96,6 +101,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                 case "/register":
                     register(chatId);
+                    break;
+
+                case "/send":
                     break;
 
                 default:
@@ -200,9 +208,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         markup.setKeyboard(rowsInline);
 
         message.setReplyMarkup(markup);
-
-
-
 
         try {
             execute(message);
